@@ -1,9 +1,12 @@
 //! Portable worksheet model, ordered calculation, and Quire-owned persistence.
 mod calculation;
 mod format;
+pub mod layout;
+pub mod syntax;
 
 pub use calculation::{Calculation, MathError, Quantity};
 pub use format::FileError;
+pub use layout::RegionLayout;
 use serde::{Deserialize, Serialize};
 
 /// A region's ID survives editing, reordering, and save/reopen.
@@ -12,6 +15,9 @@ use serde::{Deserialize, Serialize};
 pub struct Region {
     pub id: u64,
     pub content: RegionContent,
+    /// Absent only while decoding a version 1 document, before migration.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub layout: Option<RegionLayout>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -77,8 +83,43 @@ impl Worksheet {
                 id += 1;
             }
         }
-        self.regions.push(Region { id, content });
+        let layout = self
+            .regions
+            .iter()
+            .filter_map(|region| region.layout)
+            .max_by_key(|layout| (layout.page, layout.y))
+            .map(|last| {
+                let next_y = last.y + 84;
+                if next_y > layout::CONTENT_BOTTOM {
+                    RegionLayout {
+                        page: last.page + 1,
+                        ..RegionLayout::automatic(0)
+                    }
+                } else {
+                    RegionLayout {
+                        page: last.page,
+                        y: next_y,
+                        ..RegionLayout::automatic(0)
+                    }
+                }
+            })
+            .unwrap_or_else(|| RegionLayout::automatic(0));
+        self.regions.push(Region {
+            id,
+            content,
+            layout: Some(layout),
+        });
         id
+    }
+
+    /// Visual reading order is page, then top to bottom, then left to right.
+    /// Exact ties retain their previous calculation order.
+    pub fn sort_by_position(&mut self) {
+        self.regions.sort_by_key(|region| {
+            region
+                .layout
+                .map(|layout| (layout.page, layout.y, layout.x))
+        });
     }
 
     /// Rebuild bindings from the top. Text has no effect; errors never leave

@@ -9,7 +9,7 @@ use std::{
 
 const MAX_BYTES: u64 = 8 * 1024 * 1024;
 const MAGIC: &str = "quire-worksheet";
-const VERSION: u32 = 1;
+const VERSION: u32 = 2;
 
 #[derive(Debug)]
 pub struct FileError(String);
@@ -40,12 +40,23 @@ struct Document {
 }
 
 fn validate(sheet: &Worksheet) -> Result<(), FileError> {
+    if sheet.regions.windows(2).any(|pair| {
+        pair[0]
+            .layout
+            .zip(pair[1].layout)
+            .is_some_and(|(a, b)| (a.page, a.y, a.x) > (b.page, b.y, b.x))
+    }) {
+        return Err(FileError("Region order disagrees with page positions; refusing to change calculation order silently".into()));
+    }
     let mut ids = HashSet::new();
     for region in &sheet.regions {
         if region.id == 0 || region.id >= u64::MAX - 1 || !ids.insert(region.id) {
             return Err(FileError(
                 "Region IDs must be unique, nonzero, and below u64::MAX - 1".into(),
             ));
+        }
+        if !region.layout.is_some_and(|layout| layout.is_valid()) {
+            return Err(FileError("Invalid or missing region layout: expected a position inside one of at most 1000 pages".into()));
         }
     }
     Ok(())
@@ -82,11 +93,22 @@ impl Worksheet {
         if json.len() as u64 > MAX_BYTES {
             return Err(FileError("Worksheet exceeds the 8 MiB file limit".into()));
         }
-        let document: Document = serde_json::from_str(json)?;
-        if document.format != MAGIC || document.version != VERSION {
+        let mut document: Document = serde_json::from_str(json)?;
+        if document.format != MAGIC || !matches!(document.version, 1 | VERSION) {
             return Err(FileError(
-                "Unsupported file format or version; expected quire-worksheet version 1".into(),
+                "Unsupported file format or version; expected quire-worksheet version 1 or 2"
+                    .into(),
             ));
+        }
+        if document.version == 1 {
+            for (index, region) in document.worksheet.regions.iter_mut().enumerate() {
+                if region.layout.is_some() {
+                    return Err(FileError(
+                        "Version 1 documents cannot contain layout data".into(),
+                    ));
+                }
+                region.layout = Some(crate::RegionLayout::automatic(index));
+            }
         }
         validate(&document.worksheet)?;
         Ok(document.worksheet)

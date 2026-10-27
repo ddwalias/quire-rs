@@ -187,7 +187,7 @@ fn unicode_text_invalid_math_order_ids_and_title_survive_roundtrip() {
 fn unknown_fields_versions_regions_duplicates_and_truncation_are_rejected() {
     let json = sheet(&["2 + 3"]).to_json().unwrap();
     for invalid in [
-        json.replace("\"version\": 1", "\"version\": 2"),
+        json.replace("\"version\": 2", "\"version\": 99"),
         json.replace("quire-worksheet", "other-format"),
         json.replace("\"math\"", "\"plot\""),
         json.replace("\"title\":", "\"unexpected\": 1, \"title\":"),
@@ -250,7 +250,7 @@ fn unknown_content_metadata_and_duplicate_json_keys_are_rejected() {
     for invalid in [
         json.replace("\"source\":", "\"extra\": true, \"source\":"),
         json.replace("\"id\": 1", "\"extra\": true, \"id\": 1"),
-        json.replace("\"version\": 1", "\"version\": 1, \"version\": 1"),
+        json.replace("\"version\": 2", "\"version\": 2, \"version\": 2"),
         json.replace(
             "\"kind\": \"math\"",
             "\"kind\": \"math\", \"kind\": \"math\"",

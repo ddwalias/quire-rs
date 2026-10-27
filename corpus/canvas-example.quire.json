@@ -1,0 +1,19 @@
+{
+  "format": "quire-worksheet",
+  "version": 2,
+  "worksheet": {
+    "title": "A study in length",
+    "regions": [
+      {"id":1,"content":{"kind":"text","source":"01   /   DEFINITIONS\nTwo lengths, one consistent system of units."},"layout":{"page":0,"x":64,"y":164,"width":630}},
+      {"id":2,"content":{"kind":"math","source":"a := 25 cm"},"layout":{"page":0,"x":80,"y":248,"width":620}},
+      {"id":3,"content":{"kind":"math","source":"b := a + 1 m"},"layout":{"page":0,"x":80,"y":318,"width":620}},
+      {"id":4,"content":{"kind":"text","source":"02   /   EVALUATION\nConvert the result without changing its dimension."},"layout":{"page":0,"x":64,"y":416,"width":630}},
+      {"id":5,"content":{"kind":"math","source":"b -> m"},"layout":{"page":0,"x":80,"y":500,"width":620}},
+      {"id":6,"content":{"kind":"math","source":"b -> cm"},"layout":{"page":0,"x":370,"y":500,"width":330}},
+      {"id":7,"content":{"kind":"text","source":"03   /   WORKING WITH EXPRESSIONS\nFractions and powers retain the evaluator’s exact grouping."},"layout":{"page":0,"x":64,"y":604,"width":630}},
+      {"id":8,"content":{"kind":"math","source":"b / (2 m)"},"layout":{"page":0,"x":80,"y":696,"width":620}},
+      {"id":9,"content":{"kind":"math","source":"b^2"},"layout":{"page":0,"x":370,"y":696,"width":330}},
+      {"id":10,"content":{"kind":"text","source":"Try it: double-click the first definition and change 25 to 50.\nEvery result below recalculates automatically."},"layout":{"page":0,"x":64,"y":844,"width":630}}
+    ]
+  }
+}

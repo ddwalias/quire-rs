@@ -4,6 +4,14 @@ Status: recommendation for review, 2026-10-27. This supersedes the earlier propo
 
 ## Recommendation
 
+Current implementation: two packages remain sufficient. `quire-core` owns
+worksheet source, ordered evaluation, shared expression syntax, page/region
+coordinates and Quire v1/v2 persistence. `quire` owns the ribbon, canvas,
+selection and source editing, and an egui-based equation typesetter. These are
+modules within the existing packages. The typesetter consumes the core's
+expression tree. See [UI research and validation](worksheet-ui-validation.md)
+for the inspected reference composition and the implemented limits.
+
 Use **13 proposed workspace packages** when the full set of chosen capabilities warrants them; begin the first vertical slice with only the packages it actually needs. Organize each original assembly's functions as modules or adapters in these packages. Do not force a crate boundary for every DLL. The count is an architectural recommendation informed by the scan, not a Rust rule or a measured optimum; revisit boundaries after a working prototype.
 
 Windows, macOS and Linux are first-class targets. PTC license/activation and explicitly legacy-only features are excluded per user direction. Generic implementation details use Rust std or established libraries where appropriate; feature behavior, file fidelity and platform-specific compatibility still require investigation and tests. The reference assembly identities remain in the crosswalk even when there is no corresponding Rust package.

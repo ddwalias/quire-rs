@@ -49,3 +49,19 @@ Keep private worksheets, original binaries and restricted reference material
 out of Git. `corpus/private/` and `.mirror-cache/` are ignored for local work.
 Record the origin, reference version, settings and comparison method for each
 fixture before using it as a compatibility test. See `docs/quality.md`.
+
+## Positioned canvas example
+
+`canvas-example.quire.json` is an authored Quire v2 document with text,
+definitions, two columns of evaluations, a fraction and a power. It is the
+document opened by the desktop's **Example worksheet** button. Source and
+coordinate data were created for Quire; they contain no Mathcad package data.
+
+Case ID: `canvas-lengths-v2`. Origin: authored for this project, 2026-10-27.
+Allowed handling: source control, editing, CI replay and screenshots of Quire
+rendering this synthetic document. For `a := 25 cm`, expected evaluations are
+1.25 m, 125 cm, 0.625 and 1.5625 m^2. Editing to 50 cm gives 1.5 m, 150 cm,
+0.75 and 2.25 m^2. These are independently calculated arithmetic expectations;
+only the earlier 1.25 m case has the limited Mathcad observation above.
+Its hash and the UI inspection evidence are recorded in
+[canvas validation](../docs/worksheet-ui-validation.md).
