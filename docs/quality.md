@@ -2,6 +2,13 @@
 
 Status: draft for discussion. This strategy applies to the Rust implementation; the separate mirror project retains its own Release IL rules. Mathcad Prime 12.0.1.0 is the initial reference. Windows, macOS and Linux are first-class targets. Reference and cross-platform workflow tooling described below is planned, not implemented yet.
 
+The [QA operating plan](qa-plan.md) defines feature verification, defect triage,
+evidence records and release qualification from the first milestone onward.
+It distinguishes existing CI configuration from enforcement and automation
+that still need implementation.
+The [backlog review](backlog-review.md) records the finite-scope readiness
+requirements and separates current-product QA from future-feature dependencies.
+
 ## 1. Quality objective
 
 Users must be able to trust both their engineering results and their files. A feature is ready to claim when its supported inputs and limits are clear, its results and errors have suitable evidence, it behaves correctly on supported platforms, and editing or saving does not silently destroy worksheet content. UI fidelity, numerical compatibility, document fidelity, reliability, accessibility and performance are separate dimensions; do not collapse them into one percentage.
