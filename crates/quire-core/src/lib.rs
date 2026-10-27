@@ -1,13 +1,49 @@
-//! UI-independent worksheet data.
-//!
-//! This initial model supports text regions only. File formats, math and
-//! calculation are intentionally not implemented yet.
+//! Portable worksheet model, ordered calculation, and Quire-owned persistence.
+mod calculation;
+mod format;
 
-/// A worksheet held in memory by the application.
-#[derive(Debug, Clone, PartialEq, Eq)]
+pub use calculation::{Calculation, MathError, Quantity};
+pub use format::FileError;
+use serde::{Deserialize, Serialize};
+
+/// A region's ID survives editing, reordering, and save/reopen.
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Region {
+    pub id: u64,
+    pub content: RegionContent,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(
+    tag = "kind",
+    content = "source",
+    rename_all = "snake_case",
+    deny_unknown_fields
+)]
+pub enum RegionContent {
+    Text(String),
+    Math(String),
+}
+
+impl RegionContent {
+    pub fn source(&self) -> &str {
+        match self {
+            Self::Text(source) | Self::Math(source) => source,
+        }
+    }
+    pub fn source_mut(&mut self) -> &mut String {
+        match self {
+            Self::Text(source) | Self::Math(source) => source,
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
 pub struct Worksheet {
-    title: String,
-    text_regions: Vec<String>,
+    pub title: String,
+    pub regions: Vec<Region>,
 }
 
 impl Default for Worksheet {
@@ -17,55 +53,37 @@ impl Default for Worksheet {
 }
 
 impl Worksheet {
-    /// Creates an empty worksheet with the given title.
     pub fn new(title: impl Into<String>) -> Self {
         Self {
             title: title.into(),
-            text_regions: Vec::new(),
+            regions: Vec::new(),
         }
     }
 
-    /// Returns the worksheet's display title.
-    pub fn title(&self) -> &str {
-        &self.title
+    pub fn add_region(&mut self, content: RegionContent) -> u64 {
+        let mut id = self
+            .regions
+            .iter()
+            .map(|r| r.id)
+            .max()
+            .unwrap_or(0)
+            .saturating_add(1);
+        if id >= u64::MAX - 1 {
+            // A valid document can contain sparse IDs near the upper bound.
+            // Reuse a free low ID instead of overflowing or adding an ID that
+            // cannot be saved. A Vec cannot occupy this entire ID space.
+            id = 1;
+            while self.regions.iter().any(|region| region.id == id) {
+                id += 1;
+            }
+        }
+        self.regions.push(Region { id, content });
+        id
     }
 
-    /// Adds an empty text region to the end of the worksheet.
-    pub fn add_text_region(&mut self) {
-        self.text_regions.push(String::new());
-    }
-
-    /// Returns the text regions in worksheet order.
-    pub fn text_regions(&self) -> &[String] {
-        &self.text_regions
-    }
-
-    /// Returns the text regions for editing.
-    pub fn text_regions_mut(&mut self) -> &mut [String] {
-        &mut self.text_regions
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::Worksheet;
-
-    #[test]
-    fn new_worksheet_starts_empty() {
-        let worksheet = Worksheet::new("Engineering notes");
-
-        assert_eq!(worksheet.title(), "Engineering notes");
-        assert!(worksheet.text_regions().is_empty());
-    }
-
-    #[test]
-    fn adding_and_editing_text_preserves_region_order() {
-        let mut worksheet = Worksheet::default();
-        worksheet.add_text_region();
-        worksheet.add_text_region();
-        worksheet.text_regions_mut()[0].push_str("First");
-        worksheet.text_regions_mut()[1].push_str("Second");
-
-        assert_eq!(worksheet.text_regions(), ["First", "Second"]);
+    /// Rebuild bindings from the top. Text has no effect; errors never leave
+    /// a stale previous result or a previous definition of the same name.
+    pub fn calculate(&self) -> Vec<Option<Result<Calculation, MathError>>> {
+        calculation::calculate(self)
     }
 }

@@ -1,0 +1,2 @@
+# Keep the synthetic corpus hash stable across Windows, macOS and Linux.
+*.quire.json text eol=lf

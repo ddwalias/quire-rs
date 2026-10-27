@@ -1,0 +1,14 @@
+{
+  "format": "quire-worksheet",
+  "version": 1,
+  "worksheet": {
+    "title": "Length calculation",
+    "regions": [
+      {"id": 1, "content": {"kind": "text", "source": "Add a length in centimetres to a length in metres. Edit a to recalculate."}},
+      {"id": 2, "content": {"kind": "math", "source": "a := 25 cm"}},
+      {"id": 3, "content": {"kind": "math", "source": "b := a + 1 m"}},
+      {"id": 4, "content": {"kind": "math", "source": "b -> m"}},
+      {"id": 5, "content": {"kind": "math", "source": "b -> cm"}}
+    ]
+  }
+}
