@@ -1,0 +1,12 @@
+[workspace]
+members = ["crates/quire-core", "apps/quire"]
+resolver = "3"
+
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+rust-version = "1.95"
+
+[workspace.dependencies]
+quire-core = { path = "crates/quire-core" }
+eframe = { version = "0.37", default-features = false, features = ["accesskit", "clipboard", "default_fonts", "glow", "wayland", "x11"] }

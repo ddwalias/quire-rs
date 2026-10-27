@@ -1,0 +1,7 @@
+/target/
+/.cache/
+/.mirror-cache/
+/corpus/private/
+*.pdb
+*.ilk
+*.tmp
